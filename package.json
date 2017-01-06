@@ -1,0 +1,46 @@
+{
+  "name": "mdns-discovery",
+  "version": "0.1.2",
+  "description": "Multicast DNS",
+  "author": {
+    "name": "soef",
+    "email": "soef@gmx.net"
+  },
+  "contributors": [
+    {
+      "name": "soef",
+      "email": "soef@gmx.net"
+    }
+  ],
+  "homepage": "https://github.com/soef/mdns-discovery",
+  "license": "MIT",
+  "keywords": [
+    "mnds",
+    "broadcast",
+    "datagram",
+    "dgram",
+    "multicast",
+    "discovery"
+  ],
+  "dependencies": {
+    "dgram": "^1.0.1",
+    "dns-packet": "^1.1.1",
+    "debug": "~2.2.0"
+  },
+  "devDependencies": {
+    "mocha": "^2.3.4",
+    "chai": "^3.4.1"
+  },
+  "scripts": {
+    "test": "node node_modules/mocha/bin/mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soef/mdns-discovery.git"
+  },
+  "bugs": {
+    "url": "https://github.com/soef/mdns-discovery/issues"
+  },
+  "main": "mdns-discovery.js",
+  "readmeFilename": "readme.md"
+}
