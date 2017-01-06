@@ -11,7 +11,7 @@
 ####Some Examples:
 
 Find all Amazon Fire TV devices on the local network:
-```
+```js
 var Mdns = require('mdns-discovery');
 
 var mdns = new Mdns({ timeout: 5, name: '_amzn-wplay._tcp.local', find: 'amzn.dmgr:'});
@@ -23,7 +23,7 @@ mdns.run (function(res) {
 ```
 
 List all mdns questions and answers for 10 seconds:
-```
+```js
 var Mdns = require('mdns-discovery');
 
 var mdns = new Mdns({ timeout: 10 });
@@ -39,7 +39,7 @@ mdns.run ();
 ```
 
 Presence:
-```
+```js
 var mdns = require('mdns-discovery')();
 
 mdns.onIP('192.168.1.31', function (packet, rinfo) {
