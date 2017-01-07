@@ -1,6 +1,6 @@
 {
   "name": "mdns-discovery",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Multicast DNS",
   "author": {
     "name": "soef",
@@ -15,7 +15,7 @@
   "homepage": "https://github.com/soef/mdns-discovery",
   "license": "MIT",
   "keywords": [
-    "mnds",
+    "mdns",
     "broadcast",
     "datagram",
     "dgram",

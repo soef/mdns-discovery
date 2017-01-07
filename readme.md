@@ -11,9 +11,15 @@
 
 Find all Amazon Fire TV devices on the local network:
 ```js
+
 var Mdns = require('mdns-discovery');
 
-var mdns = new Mdns({ timeout: 5, name: '_amzn-wplay._tcp.local', find: 'amzn.dmgr:'});
+var mdns = new Mdns({
+    timeout: 4,
+    returnOnFirstFound: true,
+    name: '_amzn-wplay._tcp.local',
+    find: 'amzn.dmgr:'
+});
 mdns.run (function(res) {
     res.forEach(enry) {
        console.log(entry);

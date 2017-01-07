@@ -1,8 +1,8 @@
 "use strict";
 
-var debug = require('debug')('mdns-discovery');
-var dgram = require("dgram");
-var packet = require('dns-packet');
+var debug = require('debug')('mdns-discovery'),
+    dgram = require("dgram"),
+    packet = require('dns-packet');
 
 var defaultOptions = {
     //name: 'm_d_n_s',
@@ -22,6 +22,7 @@ var defaultOptions = {
     multicast: true,
     multicastTTL: 64,
     ttl: 64
+    //returnOnFirstFound: false,
 	//find: 'string'
 };
 
@@ -111,7 +112,6 @@ MulticastDNS.prototype.prepare = function (interfaceIp) {
     
     var client = dgram.createSocket({ type: this.options.type, reuseAddr: this.options.reuseAddr });
     
-    //client.on("message", this.onMessage.bind(this));
     client.on("message", function(message, rinfo) {
         this.onMessage(message, rinfo);
     }.bind(this));
@@ -164,6 +164,7 @@ MulticastDNS.prototype.run = function (timeout, readyCallback) {
     this.options.interfaces.forEach(function(interfaceIp) {
         this.prepare(interfaceIp);
     }.bind(this));
+    if (readyCallback) this.readyCallback = readyCallback.bind(this);
     if (timeout) this.timer = setTimeout(function() {
         this.close();
         if (debug.enabled) {
@@ -171,7 +172,7 @@ MulticastDNS.prototype.run = function (timeout, readyCallback) {
                debug("found: %s - %s", info.ip, info.name);
             });
         }
-        readyCallback && readyCallback(this.found);
+        this.readyCallback && this.readyCallback(this.found);
     }.bind(this), timeout * 1000);
     return this;
 };
@@ -191,6 +192,10 @@ MulticastDNS.prototype.onPacket = function (packets, rinfo) {
                 //name: a.name
                 name: packets.answers[0].name ? packets.answers[0].name : a.name
             });
+            if (this.options.returnOnFirstFound) {
+                this.close();
+                this.readyCallback(this.found);
+            }
         }
     }.bind(this));
     return this;
