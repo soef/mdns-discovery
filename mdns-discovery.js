@@ -187,7 +187,8 @@ MulticastDNS.prototype.onPacket = function (packets, rinfo) {
             var found = this.found.find(function(v) {
                 return v.ip === rinfo.address;
             });
-            if (!found) this.found.push({
+            if (found) return;
+            this.found.push({
                 ip: rinfo.address,
                 //name: a.name
                 name: packets.answers[0].name ? packets.answers[0].name : a.name
