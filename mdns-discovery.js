@@ -178,16 +178,33 @@ MulticastDNS.prototype.run = function (timeout, readyCallback) {
 };
 
 
+MulticastDNS.prototype.setFilter = function (propName, arr) {
+    if (typeof propName === 'function') {
+        this.validFilter = propName.bind(this);
+        return this;
+    }
+    this.validFilter = function(a) {
+        var bo = arr.find(function(v) {
+            return v[propName] === a[propName]
+        });
+        return !bo;
+    };
+    return this;
+};
+
+
 MulticastDNS.prototype.onPacket = function (packets, rinfo) {
     //this.options.find = 'amzn.dmgr:';
     if (!this.options.find || !packets.answers) return;
     
     packets.answers.forEach(function(a) {
         if (a.name.indexOf(this.options.find) === 0) {
+            if (this.validFilter && !this.validFilter({ ip: rinfo.address })) return;
             var found = this.found.find(function(v) {
                 return v.ip === rinfo.address;
             });
             if (found) return;
+            
             this.found.push({
                 ip: rinfo.address,
                 //name: a.name
@@ -207,6 +224,7 @@ MulticastDNS.prototype.on = function (name, fn) {
     switch(name) {
         case 'packet': this.__proto__.onPacket = fn; break;
         case 'message': this.__proto__.onMessage = fn; break;
+        case 'filter': this.validFilter = fn; break;
     }
     return this;
 }

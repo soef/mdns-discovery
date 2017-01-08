@@ -1,4 +1,4 @@
-###mnds Multicast DNS
+###mdns Multicast DNS
 <!--
 [![Tests](http://img.shields.io/travis/soef/soef/master.svg)](https://travis-ci.org/soef/soef)
 [![Build status](https://ci.appveyor.com/api/projects/status/njb3gh6f49motmuk?svg=true)](https://ci.appveyor.com/project/soef/soef)
@@ -53,3 +53,24 @@ mdns.onIP('192.168.1.31', function (packet, rinfo) {
     }
 }).run ();
 ```
+
+Filter:
+```js
+var mdns = require('mdns-discovery')();
+
+var mdns = Mdns({
+    timeout: 3,
+    name: '_amzn-wplay._tcp.local',
+    find: 'amzn.dmgr:'
+});
+
+var allreadyUsed = [ {ip: '192.168.1.94'}, {ip: '192.168.1.91'} ];
+
+mdns.setFilter('ip', allreadyUsed).run (function(res) {
+    res.forEach(function(v) {
+        console.log(v);
+    });
+});
+```
+
+
