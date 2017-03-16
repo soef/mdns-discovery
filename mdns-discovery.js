@@ -177,7 +177,7 @@ MulticastDNS.prototype.run = function (timeout, readyCallback) {
     return this;
 };
 
-MulticastDNS.findFirstIP = function (callback) {
+MulticastDNS.prototype.findFirstIP = function (callback) {
     this.options.returnOnFirstFound = true;
     this.run (function(res) {
         if (!res || res.length === 0) return callback && callback();
