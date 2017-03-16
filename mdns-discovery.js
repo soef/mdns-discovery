@@ -168,7 +168,7 @@ MulticastDNS.prototype.run = function (timeout, readyCallback) {
     if (timeout) this.timer = setTimeout(function() {
         this.close();
         if (debug.enabled) {
-            this.found.foreEach(function(info) {
+            this.found.forEach(function(info) {
                debug("found: %s - %s", info.ip, info.name);
             });
         }
@@ -177,6 +177,13 @@ MulticastDNS.prototype.run = function (timeout, readyCallback) {
     return this;
 };
 
+MulticastDNS.findFirstIP = function (callback) {
+    this.options.returnOnFirstFound = true;
+    this.run (function(res) {
+        if (!res || res.length === 0) return callback && callback();
+        callback && callback(res[0].ip);
+    });
+}
 
 MulticastDNS.prototype.setFilter = function (propName, arr) {
     if (typeof propName === 'function') {
