@@ -21,9 +21,10 @@ var defaultOptions = {
     broadcast: true,
     multicast: true,
     multicastTTL: 64,
-    ttl: 64
+    ttl: 64,
+    noQuestions: true
     //returnOnFirstFound: false,
-	//find: 'string'
+    //find: 'string'
 };
 
 
@@ -96,6 +97,7 @@ MulticastDNS.prototype.getPayload = function () {
         //     class: this.options.q.class, //0x8001,
         //     //ttl: 3600
         // }]
+        //, type: 'query'
     });
     return message;
 };
@@ -119,7 +121,7 @@ MulticastDNS.prototype.prepare = function (interfaceIp) {
         debug("listening on ",client.address());
         
         client.setBroadcast(this.options.broadcast !== false);
-    
+        
         if (this.options.multicast !== false) {
             if (this.options.addMembership !== false) {
                 client.addMembership(this.options.ip, interfaceIp);
@@ -157,7 +159,7 @@ MulticastDNS.prototype.close = function () {
 MulticastDNS.prototype.run = function (timeout, readyCallback) {
     if (typeof timeout === 'function') {
         readyCallback = timeout;
-        timeout = undefined; 
+        timeout = undefined;
     }
     if (timeout === undefined) timeout = this.options.timeout;
     this.getInterfaces();
@@ -169,7 +171,7 @@ MulticastDNS.prototype.run = function (timeout, readyCallback) {
         this.close();
         if (debug.enabled) {
             this.found.forEach(function(info) {
-               debug("found: %s - %s", info.ip, info.name);
+                debug("found: %s - %s", info.ip, info.name);
             });
         }
         this.readyCallback && this.readyCallback(this.found);
@@ -201,28 +203,39 @@ MulticastDNS.prototype.setFilter = function (propName, arr) {
 
 
 MulticastDNS.prototype.onPacket = function (packets, rinfo) {
-    //this.options.find = 'amzn.dmgr:';
-    if (!this.options.find || !packets.answers) return;
+    if (this.options.find === undefined || !packets.answers) return;
+    var self = this;
     
-    packets.answers.forEach(function(a) {
-        if (a.name.indexOf(this.options.find) === 0) {
-            if (this.validFilter && !this.validFilter({ ip: rinfo.address })) return;
-            var found = this.found.find(function(v) {
-                return v.ip === rinfo.address;
-            });
-            if (found) return;
-            
-            this.found.push({
-                ip: rinfo.address,
-                //name: a.name
-                name: packets.answers[0].name ? packets.answers[0].name : a.name
-            });
-            if (this.options.returnOnFirstFound) {
-                this.close();
-                this.readyCallback(this.found);
+    function doIt(qa, type) {
+        if (qa) qa.forEach (function (a) {
+            if (self.options.find === '*' || a.name.indexOf (self.options.find) === 0) {
+                if (self.validFilter && !self.validFilter ({ip: rinfo.address})) return;
+                var alreadyFound = self.found.find (function (v) {
+                    return v.ip === rinfo.address;
+                });
+                if (alreadyFound) return;
+                
+                var entry = {
+                    ip: rinfo.address,
+                    type: type,
+                    //name: a.name
+                    name: qa[0].name ? qa[0].name : a.name
+                };
+                
+                if (self.onEntry) {
+                    self.onEntry (entry);
+                } else {
+                    self.found.push (entry);
+                }
+                if (self.options.returnOnFirstFound) {
+                    self.close ();
+                    self.readyCallback (self.found);
+                }
             }
-        }
-    }.bind(this));
+        });
+    }
+    doIt(packets.answers, 'answer');
+    if (!this.noQuestions && packets.questions) doIt(packets.questions, 'query');
     return this;
 };
 
@@ -232,6 +245,7 @@ MulticastDNS.prototype.on = function (name, fn) {
         case 'packet': this.__proto__.onPacket = fn; break;
         case 'message': this.__proto__.onMessage = fn; break;
         case 'filter': this.validFilter = fn; break;
+        case 'entry': this.onEntry = fn.bind(this); break;
     }
     return this;
 }
