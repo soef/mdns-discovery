@@ -22,7 +22,8 @@ var defaultOptions = {
     multicast: true,
     multicastTTL: 64,
     ttl: 64,
-    noQuestions: true
+    noQuestions: true,
+    details: true,
     //returnOnFirstFound: false,
     //find: 'string'
 };
@@ -131,9 +132,22 @@ MulticastDNS.prototype.prepare = function (interfaceIp) {
         }
         if (this.options.ttl) client.setTTL(this.options.ttl);
         if (this.options.q.name) {
-            var payload = this.getPayload();
-            client.send(payload, 0, payload.length, this.options.port, this.options.ip, function (err, bytes) {
-            });
+            var self = this;
+            function sendIt() {
+                var payload = self.getPayload();
+                client.send(payload, 0, payload.length, self.options.port, self.options.ip, function (err, bytes) {
+                });
+            }
+            if (Array.isArray (this.options.q.name)) {
+                var origName = this.options.q.name;
+                origName.forEach(function(name) {
+                    self.options.q.name = name;
+                    sendIt();
+                });
+                self.options.q.name = origName;
+            } else {
+                sendIt();
+            }
         }
     }.bind(this));
     client.on("close", this.onClose.bind(this));
@@ -205,6 +219,15 @@ MulticastDNS.prototype.setFilter = function (propName, arr) {
 MulticastDNS.prototype.onPacket = function (packets, rinfo) {
     if (this.options.find === undefined || !packets.answers) return;
     var self = this;
+
+    function addDetails(entry, a) {
+        if (self.options.details && a.type) {
+            entry[a.type] = entry[a.type] || {};
+            var d = entry[a.type];
+            if (a.name && (!d.name || a.name.length > d.name.length)) d.name = a.name;
+            if (a.data) d.data = a.data;
+        }
+    }
     
     function doIt(qa, type) {
         if (qa) qa.forEach (function (a) {
@@ -213,7 +236,10 @@ MulticastDNS.prototype.onPacket = function (packets, rinfo) {
                 var alreadyFound = self.found.find (function (v) {
                     return v.ip === rinfo.address;
                 });
-                if (alreadyFound) return;
+                if (alreadyFound) {
+                    addDetails(alreadyFound, a);
+                    return;
+                }
                 
                 var entry = {
                     ip: rinfo.address,
@@ -221,6 +247,7 @@ MulticastDNS.prototype.onPacket = function (packets, rinfo) {
                     //name: a.name
                     name: qa[0].name ? qa[0].name : a.name
                 };
+                addDetails(entry, a);
                 
                 if (self.onEntry) {
                     self.onEntry (entry);

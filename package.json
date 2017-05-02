@@ -1,6 +1,6 @@
 {
   "name": "mdns-discovery",
-  "version": "0.1.12",
+  "version": "0.2.0",
   "description": "Multicast DNS",
   "author": {
     "name": "soef",
