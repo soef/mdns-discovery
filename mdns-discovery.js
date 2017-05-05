@@ -224,8 +224,23 @@ MulticastDNS.prototype.onPacket = function (packets, rinfo) {
         if (self.options.details && a.type) {
             entry[a.type] = entry[a.type] || {};
             var d = entry[a.type];
-            if (a.name && (!d.name || a.name.length > d.name.length)) d.name = a.name;
-            if (a.data) d.data = a.data;
+            //if (a.name && (!d.name || a.name.length > d.name.length)) d.name = a.name;
+            if (a.name) {
+               if (d.name) {
+                   d.names = d.names || [d.name];
+                   d.names.push(a.name);
+                   if (a.name.length > d.name.length) d.name = a.name;
+               } else {
+                   d.name = a.name;
+               }
+            }
+            if (a.data) {
+                if (d.data) {
+                    d.dataa = d.dataa || [d.data];
+                    d.dataa.push[a.data]
+                }
+                d.data = a.data;
+            }
         }
     }
     
@@ -262,7 +277,7 @@ MulticastDNS.prototype.onPacket = function (packets, rinfo) {
         });
     }
     doIt(packets.answers, 'answer');
-    if (!this.noQuestions && packets.questions) doIt(packets.questions, 'query');
+    if (!this.options.noQuestions && packets.questions) doIt(packets.questions, 'query');
     return this;
 };
 
