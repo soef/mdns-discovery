@@ -329,7 +329,7 @@ MulticastDNS.prototype.onMessage = function (message, rinfo) {
     
     if (debug.enabled && packets.answers) packets.answers.forEach(function(packet, i) {
         //debug('packet[%d]=%s type=%s class=%d, ttl=%d', i, packet.name, packet.type, packet.class, packet.ttl);
-        debug(`${rinfo.address} - packet[${i}]=${packet.name}, type=${packet.type}, class=${packet.class}, ttl=${packet.ttl}}`);
+        //ebug(`${rinfo.address} - packet[${i}]: type=${packet.type}, ${packet.name}, class=${packet.class}, ttl=${packet.ttl}}`);
     });
     return this;
 };
