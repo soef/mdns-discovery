@@ -21,9 +21,9 @@ var mdns = new Mdns({
     find: 'amzn.dmgr:'
 });
 mdns.run (function(res) {
-    res.forEach(entry) {
+    res.forEach(function(entry) {
        console.log(entry);
-    }
+    });
 });
 ```
 
